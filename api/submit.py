@@ -38,7 +38,7 @@ def call_groq_api(api_key, prompt):
     url = "https://api.groq.com/openai/v1/chat/completions"
     
     payload = {
-        "model": "gemma2-9b-it",
+        "model": "openai/gpt-oss-20b",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
         "max_tokens": 1024

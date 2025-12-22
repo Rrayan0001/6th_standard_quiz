@@ -38,7 +38,7 @@ def call_groq_api(api_key, prompt):
     url = "https://api.groq.com/openai/v1/chat/completions"
     
     payload = {
-        "model": "mixtral-8x7b-32768",
+        "model": "gemma2-9b-it",
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
         "max_tokens": 1024
@@ -46,7 +46,8 @@ def call_groq_api(api_key, prompt):
     
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
     }
     
     req = urllib.request.Request(
@@ -56,9 +57,13 @@ def call_groq_api(api_key, prompt):
         method='POST'
     )
     
-    with urllib.request.urlopen(req, timeout=30) as response:
-        result = json.loads(response.read().decode('utf-8'))
-        return result['choices'][0]['message']['content']
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            return result['choices'][0]['message']['content']
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        raise Exception(f"HTTP {e.code}: {e.reason} - {error_body}")
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):

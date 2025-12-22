@@ -88,6 +88,7 @@ class handler(BaseHTTPRequestHandler):
                 print(f"Name fetch error: {e}")
 
         report = f"शाबास {student_name}! तुम्ही {score}/{total_questions} गुण मिळवले. सराव सुरू ठेवा!"
+        groq_error = None
         groq_key = get_groq_key()
         
         if groq_key:
@@ -129,7 +130,10 @@ class handler(BaseHTTPRequestHandler):
                 )
                 report = resp.choices[0].message.content
             except Exception as e:
+                groq_error = str(e)
                 print(f"Groq Error: {e}")
+        else:
+            groq_error = "GROQ_API_KEY not found in environment"
 
         if db_url:
             try:
@@ -146,7 +150,8 @@ class handler(BaseHTTPRequestHandler):
             "score": score,
             "total": total_questions,
             "percentage": (score/total_questions)*100 if total_questions > 0 else 0,
-            "report": report
+            "report": report,
+            "debug": {"groq_key_present": bool(groq_key), "groq_error": groq_error}
         }
         self._send_json(response)
 

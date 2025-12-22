@@ -1,7 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import os
-import psycopg
+import urllib.request
+import urllib.error
 
 GLOBAL_Q_MAP = {}
 
@@ -11,7 +12,7 @@ def load_questions():
         base_path = os.path.dirname(os.path.abspath(__file__))
         json_path = os.path.join(base_path, "data", "questions.json")
         
-        with open(json_path, "r") as f:
+        with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             for subject, q_list in data.items():
                 for q in q_list:
@@ -31,6 +32,33 @@ def get_db_url():
 def get_groq_key():
     key = os.environ.get("GROQ_API_KEY")
     return key.strip() if key else None
+
+def call_groq_api(api_key, prompt):
+    """Call Groq API using direct HTTP request (no SDK needed)"""
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    
+    payload = {
+        "model": "llama-3.1-8b-instant",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+        "max_tokens": 1024
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode('utf-8'),
+        headers=headers,
+        method='POST'
+    )
+    
+    with urllib.request.urlopen(req, timeout=30) as response:
+        result = json.loads(response.read().decode('utf-8'))
+        return result['choices'][0]['message']['content']
 
 class handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -70,14 +98,17 @@ class handler(BaseHTTPRequestHandler):
                 
                 section_totals[sec_key] += 1
 
-                if q_obj['correct_answer'].strip() == ans.strip():
+                if q_obj.get('correct_answer', '').strip() == str(ans).strip():
                     score += 1
                     section_scores[sec_key] += 1
         
-        student_name = "Student"
+        student_name = "विद्यार्थी"
         db_url = get_db_url()
+        db_error = None
+        
         if db_url:
             try:
+                import psycopg
                 with psycopg.connect(db_url) as conn:
                     with conn.cursor() as cur:
                         cur.execute("SELECT name FROM students WHERE id = %s", (student_id,))
@@ -85,17 +116,16 @@ class handler(BaseHTTPRequestHandler):
                         if res:
                             student_name = res[0]
             except Exception as e:
-                print(f"Name fetch error: {e}")
+                db_error = str(e)
 
+        # Default report in Marathi
         report = f"शाबास {student_name}! तुम्ही {score}/{total_questions} गुण मिळवले. सराव सुरू ठेवा!"
         groq_error = None
         groq_key = get_groq_key()
         
         if groq_key:
             try:
-                from groq import Groq
-                client = Groq(api_key=groq_key)
-                
+                # Build section analysis
                 section_analysis = []
                 for sec, sc in section_scores.items():
                     total = section_totals.get(sec, 1)
@@ -118,30 +148,33 @@ class handler(BaseHTTPRequestHandler):
                     "4. 3 उपयुक्त अभ्यास टिप्स असलेला 'शिफारसी' विभाग द्या.\n"
                     "5. प्रोत्साहनात्मक समारोप संदेशाने समाप्त करा.\n"
                     "6. ६वी इयत्तेच्या मुलांसाठी योग्य सोप्या भाषेत लिहा.\n"
-                    "7. [शिक्षकाचे नाव] सारखे कोणतेही प्लेसहोल्डर वापरू नका.\n"
+                    "7. कोणतेही प्लेसहोल्डर वापरू नका.\n"
                     "8. स्पष्ट विभाग शीर्षके वापरा.\n"
-                    "9. एकूण लांबी: अंदाजे 200-250 शब्द.\n"
+                    "9. एकूण लांबी: 200-250 शब्द.\n"
                     "10. संपूर्ण अहवाल मराठी भाषेत असावा.\n"
                 )
                 
-                resp = client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=[{"role": "user", "content": prompt}]
-                )
-                report = resp.choices[0].message.content
+                # Call Groq API using HTTP
+                report = call_groq_api(groq_key, prompt)
+                
+            except urllib.error.HTTPError as e:
+                groq_error = f"HTTP {e.code}: {e.reason}"
+            except urllib.error.URLError as e:
+                groq_error = f"URL Error: {str(e.reason)}"
             except Exception as e:
                 groq_error = str(e)
-                print(f"Groq Error: {e}")
         else:
-            groq_error = "GROQ_API_KEY not found in environment"
+            groq_error = "GROQ_API_KEY not found"
 
+        # Save to DB (optional, don't fail if it doesn't work)
         if db_url:
             try:
+                import psycopg
                 with psycopg.connect(db_url, autocommit=True) as conn:
                     with conn.cursor() as cur:
                         cur.execute(
                             "INSERT INTO test_results (student_id, subject, score, total_questions, answers, report) VALUES (%s, %s, %s, %s, %s, %s)",
-                            (student_id, subject, score, total_questions, json.dumps(answers), report)
+                            (student_id, subject, score, total_questions, json.dumps(answers, ensure_ascii=False), report)
                         )
             except Exception as e:
                 print(f"DB save error: {e}")
@@ -151,13 +184,17 @@ class handler(BaseHTTPRequestHandler):
             "total": total_questions,
             "percentage": (score/total_questions)*100 if total_questions > 0 else 0,
             "report": report,
-            "debug": {"groq_key_present": bool(groq_key), "groq_error": groq_error}
+            "debug": {
+                "groq_key_present": bool(groq_key),
+                "groq_error": groq_error,
+                "db_error": db_error
+            }
         }
         self._send_json(response)
 
     def _send_json(self, data, status=200):
         self.send_response(status)
-        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        self.wfile.write(json.dumps(data).encode())
+        self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))

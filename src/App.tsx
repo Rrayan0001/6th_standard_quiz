@@ -20,6 +20,8 @@ interface AppContextType {
   setSubject: (s: string) => void;
   result: any;
   setResult: (r: any) => void;
+  lastAnswers: Record<string, string>;
+  setLastAnswers: (a: Record<string, string>) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -83,7 +85,7 @@ function InstructionsPage() {
 }
 
 function QuizPage() {
-  const { student, questions, subject, setResult } = useAppContext();
+  const { student, questions, subject, setResult, setLastAnswers } = useAppContext();
   const navigate = useNavigate();
 
   if (!student.id || questions.length === 0) {
@@ -103,6 +105,7 @@ function QuizPage() {
       });
       const data = await res.json();
       setResult(data);
+      setLastAnswers(answers);
       navigate('/result');
     } catch (e) {
       console.error(e);
@@ -114,7 +117,7 @@ function QuizPage() {
 }
 
 function ResultPage() {
-  const { student, result, setStudent, setQuestions, setResult } = useAppContext();
+  const { student, result, setStudent, setQuestions, setResult, subject, lastAnswers } = useAppContext();
   const navigate = useNavigate();
 
   if (!result) {
@@ -128,7 +131,31 @@ function ResultPage() {
     navigate('/login');
   };
 
-  return <ResultScreen result={result} studentName={student.name} onRestart={handleRestart} />;
+  const handleReAnalyze = async () => {
+    try {
+      if (!lastAnswers || Object.keys(lastAnswers).length === 0) {
+        alert("No answers found to re-analyze.");
+        return;
+      }
+
+      const res = await fetch(`${API_URL}${isDev ? '/quiz/submit' : '/api/submit'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_id: student.id,
+          subject: subject,
+          answers: lastAnswers
+        }),
+      });
+      const data = await res.json();
+      setResult(data);
+    } catch (e) {
+      console.error(e);
+      alert("Error re-analyzing quiz.");
+    }
+  };
+
+  return <ResultScreen result={result} studentName={student.name} onRestart={handleRestart} onReAnalyze={handleReAnalyze} />;
 }
 
 // Main App with Provider
@@ -137,13 +164,15 @@ function App() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [subject, setSubject] = useState('');
   const [result, setResult] = useState<any>(null);
+  const [lastAnswers, setLastAnswers] = useState<Record<string, string>>({});
 
   return (
     <AppContext.Provider value={{
       student, setStudent,
       questions, setQuestions,
       subject, setSubject,
-      result, setResult
+      result, setResult,
+      lastAnswers, setLastAnswers
     }}>
       <BrowserRouter>
         <Routes>

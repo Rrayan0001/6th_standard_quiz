@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface Result {
     score: number;
@@ -11,9 +11,19 @@ interface Props {
     result: Result;
     studentName: string;
     onRestart: () => void;
+    onReAnalyze?: () => Promise<void>;
 }
 
-export const ResultScreen: React.FC<Props> = ({ result, studentName, onRestart }) => {
+export const ResultScreen: React.FC<Props> = ({ result, studentName, onRestart, onReAnalyze }) => {
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const handleReAnalyzeClick = async () => {
+        if (!onReAnalyze) return;
+        setIsAnalyzing(true);
+        await onReAnalyze();
+        setIsAnalyzing(false);
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className="neo-box p-8 max-w-4xl w-full bg-white text-center">
@@ -40,9 +50,20 @@ export const ResultScreen: React.FC<Props> = ({ result, studentName, onRestart }
 
                 {/* AI Report */}
                 <div className="neo-box bg-blue-50 p-6 mb-8 text-left border-dashed">
-                    <h3 className="text-2xl font-black mb-4 flex items-center gap-2">
-                        🤖 कामगिरी अहवाल (AI)
-                    </h3>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-2xl font-black flex items-center gap-2">
+                            🤖 कामगिरी अहवाल (AI)
+                        </h3>
+                        {onReAnalyze && (
+                            <button
+                                onClick={handleReAnalyzeClick}
+                                disabled={isAnalyzing}
+                                className="text-xs font-bold border-2 border-black px-2 py-1 bg-white hover:bg-gray-100 disabled:opacity-50"
+                            >
+                                {isAnalyzing ? '🔄 विश्लेषण चालू आहे...' : '🔄 पुन्हा विश्लेषण करा'}
+                            </button>
+                        )}
+                    </div>
                     <p className="text-lg leading-relaxed whitespace-pre-wrap">
                         {result.report}
                     </p>

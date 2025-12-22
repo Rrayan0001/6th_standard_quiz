@@ -86,19 +86,10 @@ class handler(BaseHTTPRequestHandler):
         total_questions = 30
         
         section_scores = {"Maths": 0, "Science": 0, "Social": 0}
-        section_totals = {"Maths": 0, "Science": 0, "Social": 0}
+        # Each section has exactly 10 questions in the quiz
+        section_totals = {"Maths": 10, "Science": 10, "Social": 10}
 
-        # Count TOTAL questions per section from all questions
-        for unique_id, q_obj in GLOBAL_Q_MAP.items():
-            sec = q_obj.get('section', 'General')
-            if 'Math' in sec: sec_key = 'Maths'
-            elif 'Science' in sec and 'Social' not in sec: sec_key = 'Science'
-            elif 'Social' in sec: sec_key = 'Social'
-            else: continue
-            
-            section_totals[sec_key] += 1
-
-        # Now calculate scores based on answers
+        # Calculate scores based on answers
         for unique_id, ans in answers.items():
             q_obj = GLOBAL_Q_MAP.get(unique_id)
             if q_obj:

@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #FFD43B; /* Yellow */
+  --color-secondary: #FF6B6B; /* Pink/Red */
+  --color-accent: #4DABF7;    /* Blue */
+  --color-success: #69DB7C;   /* Green */
+  --color-dark: #212529;      /* Black-ish */
+  --border-width: 3px;
+  --shadow-offset: 4px;
+}
+
+body {
+  font-family: 'Comic Neue', 'Varela Round', sans-serif; /* Friendly font if available, fallback sans */
+  background-color: #E0E7FF;
+  color: var(--color-dark);
+}
+
+.neo-box {
+  background-color: white;
+  border: var(--border-width) solid var(--color-dark);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--color-dark);
+  transition: all 0.2s ease-in-out;
+}
+
+.neo-box:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--color-dark);
+}
+
+.neo-btn {
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border: var(--border-width) solid var(--color-dark);
+  box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--color-dark);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.neo-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px var(--color-dark);
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--color-dark);
+}
+
+.neo-btn-primary { background-color: var(--color-primary); }
+.neo-btn-secondary { background-color: var(--color-secondary); color: white; }
+.neo-btn-accent { background-color: var(--color-accent); color: white; }
+.neo-btn-success { background-color: var(--color-success); }
+
+/* Custom Scrollbar for fun */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+  border-left: 3px solid black;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary); 
+  border: 3px solid black;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary); 
+}

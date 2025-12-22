@@ -19,17 +19,17 @@ export const WelcomeScreen: React.FC<Props> = ({ onStart }) => {
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className="neo-box p-8 max-w-md w-full bg-white text-center">
                 <h1 className="text-4xl font-extrabold mb-2" style={{ color: 'var(--color-secondary)' }}>
-                    🎓 STUDENT TEST
+                    🎓 विद्यार्थी परीक्षा
                 </h1>
-                <p className="text-xl mb-6 font-bold">Class 6th - Marathi Medium</p>
+                <p className="text-xl mb-6 font-bold">इयत्ता ६वी - मराठी माध्यम</p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="text-left">
-                        <label className="block font-bold mb-1">Student Name (नाव)</label>
+                        <label className="block font-bold mb-1">विद्यार्थ्याचे नाव</label>
                         <input
                             type="text"
                             className="w-full p-3 border-3 border-black font-bold focus:outline-none focus:ring-4 ring-yellow-300"
-                            placeholder="Enter your name"
+                            placeholder="तुमचे नाव लिहा"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
@@ -37,11 +37,11 @@ export const WelcomeScreen: React.FC<Props> = ({ onStart }) => {
                     </div>
 
                     <div className="text-left">
-                        <label className="block font-bold mb-1">Roll Number (रोल नंबर)</label>
+                        <label className="block font-bold mb-1">रोल नंबर</label>
                         <input
                             type="text"
                             className="w-full p-3 border-3 border-black font-bold focus:outline-none focus:ring-4 ring-pink-300"
-                            placeholder="Example: 24"
+                            placeholder="उदा: 24"
                             value={rollNo}
                             onChange={(e) => setRollNo(e.target.value)}
                             required
@@ -52,7 +52,7 @@ export const WelcomeScreen: React.FC<Props> = ({ onStart }) => {
                         type="submit"
                         className="neo-btn neo-btn-primary w-full text-xl mt-6"
                     >
-                        NEXT ➜
+                        पुढे जा ➜
                     </button>
                 </form>
             </div>

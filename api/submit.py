@@ -87,7 +87,7 @@ class handler(BaseHTTPRequestHandler):
             except Exception as e:
                 print(f"Name fetch error: {e}")
 
-        report = f"Well done {student_name}! You scored {score}/{total_questions}. Keep practicing!"
+        report = f"शाबास {student_name}! तुम्ही {score}/{total_questions} गुण मिळवले. सराव सुरू ठेवा!"
         groq_key = get_groq_key()
         
         if groq_key:
@@ -99,26 +99,28 @@ class handler(BaseHTTPRequestHandler):
                 for sec, sc in section_scores.items():
                     total = section_totals.get(sec, 1)
                     pct = (sc / total * 100) if total > 0 else 0
-                    level = "Excellent" if pct >= 80 else "Good" if pct >= 60 else "Needs Practice" if pct >= 40 else "Focus Area"
-                    section_analysis.append(f"{sec}: {sc}/{total} ({pct:.0f}%) - {level}")
+                    sec_name = "गणित" if sec == "Maths" else "विज्ञान" if sec == "Science" else "समाजशास्त्र"
+                    level = "उत्कृष्ट" if pct >= 80 else "चांगले" if pct >= 60 else "सराव करा" if pct >= 40 else "लक्ष द्या"
+                    section_analysis.append(f"{sec_name}: {sc}/{total} ({pct:.0f}%) - {level}")
 
                 prompt = (
-                    f"Generate a detailed performance report for a Class 6 student.\n\n"
-                    f"**Student Details:**\n"
-                    f"- Name: {student_name}\n"
-                    f"- Total Score: {score}/{total_questions} ({(score/total_questions*100):.1f}%)\n\n"
-                    f"**Section-wise Performance:**\n"
+                    f"इयत्ता ६वी विद्यार्थ्यासाठी मराठीमध्ये एक तपशीलवार कामगिरी अहवाल तयार करा.\n\n"
+                    f"**विद्यार्थी माहिती:**\n"
+                    f"- नाव: {student_name}\n"
+                    f"- एकूण गुण: {score}/{total_questions} ({(score/total_questions*100):.1f}%)\n\n"
+                    f"**विषयनिहाय कामगिरी:**\n"
                     + "\n".join([f"- {s}" for s in section_analysis]) + "\n\n"
-                    "**Report Requirements:**\n"
-                    "1. Start with a personalized greeting using the student's name.\n"
-                    "2. Provide a 'Summary' section (2-3 sentences) about overall performance.\n"
-                    "3. Provide a 'Subject Analysis' section with specific feedback for EACH subject.\n"
-                    "4. Provide a 'Recommendations' section with 3 actionable study tips.\n"
-                    "5. End with an encouraging closing message.\n"
-                    "6. Use simple, child-friendly language.\n"
-                    "7. NO placeholders like [Teacher Name].\n"
-                    "8. Format with clear section headers.\n"
-                    "9. Total length: approximately 250-300 words.\n"
+                    "**अहवाल आवश्यकता:**\n"
+                    "1. विद्यार्थ्याच्या नावाने वैयक्तिक अभिवादन सुरू करा.\n"
+                    "2. एकूण कामगिरीबद्दल 'सारांश' विभाग (2-3 वाक्ये) द्या.\n"
+                    "3. प्रत्येक विषयासाठी विशिष्ट अभिप्राय असलेला 'विषय विश्लेषण' विभाग द्या.\n"
+                    "4. 3 उपयुक्त अभ्यास टिप्स असलेला 'शिफारसी' विभाग द्या.\n"
+                    "5. प्रोत्साहनात्मक समारोप संदेशाने समाप्त करा.\n"
+                    "6. ६वी इयत्तेच्या मुलांसाठी योग्य सोप्या भाषेत लिहा.\n"
+                    "7. [शिक्षकाचे नाव] सारखे कोणतेही प्लेसहोल्डर वापरू नका.\n"
+                    "8. स्पष्ट विभाग शीर्षके वापरा.\n"
+                    "9. एकूण लांबी: अंदाजे 200-250 शब्द.\n"
+                    "10. संपूर्ण अहवाल मराठी भाषेत असावा.\n"
                 )
                 
                 resp = client.chat.completions.create(

@@ -5,8 +5,10 @@ import { InstructionScreen } from './components/InstructionScreen';
 import { QuizScreen } from './components/QuizScreen';
 import { ResultScreen } from './components/ResultScreen';
 
-// Use relative paths for Vercel deployment (works locally with proxy too)
-const API_URL = '';
+// Use backend directly for local dev, relative paths for Vercel
+const isDev = import.meta.env.DEV;
+const API_URL = isDev ? 'http://localhost:8000' : '';
+const API_PREFIX = isDev ? '' : '/api';
 
 // Context for shared state
 interface AppContextType {
@@ -35,7 +37,7 @@ function LoginPage() {
 
   const handleStart = async (name: string, rollNo: string) => {
     try {
-      const res = await fetch(`${API_URL}/api/login`, {
+      const res = await fetch(`${API_URL}${isDev ? '/auth/login' : '/api/login'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, roll_no: rollNo }),
@@ -62,7 +64,7 @@ function InstructionsPage() {
 
   const startUnifiedQuiz = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/quiz`);
+      const res = await fetch(`${API_URL}${isDev ? '/quiz/unified' : '/api/quiz'}`);
       const data = await res.json();
       if (data.questions && data.questions.length > 0) {
         setQuestions(data.questions);
@@ -90,7 +92,7 @@ function QuizPage() {
 
   const handleSubmit = async (answers: Record<string, string>) => {
     try {
-      const res = await fetch(`${API_URL}/api/submit`, {
+      const res = await fetch(`${API_URL}${isDev ? '/quiz/submit' : '/api/submit'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

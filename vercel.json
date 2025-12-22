@@ -1,51 +1,46 @@
 {
-    "version": 2,
-    "builds": [
+    "framework": "vite",
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "rewrites": [
         {
-            "src": "api/**/*.py",
-            "use": "@vercel/python"
+            "source": "/api/login",
+            "destination": "/api/login.py"
+        },
+        {
+            "source": "/api/quiz",
+            "destination": "/api/quiz.py"
+        },
+        {
+            "source": "/api/submit",
+            "destination": "/api/submit.py"
+        },
+        {
+            "source": "/api/init-db",
+            "destination": "/api/init-db.py"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
         }
     ],
-    "routes": [
+    "headers": [
         {
-            "src": "/api/(.*)",
-            "methods": [
-                "OPTIONS"
-            ],
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization"
-            },
-            "continue": true
-        },
-        {
-            "src": "/api/login",
-            "dest": "/api/login.py",
-            "headers": {
-                "Access-Control-Allow-Origin": "*"
-            }
-        },
-        {
-            "src": "/api/quiz",
-            "dest": "/api/quiz.py",
-            "headers": {
-                "Access-Control-Allow-Origin": "*"
-            }
-        },
-        {
-            "src": "/api/submit",
-            "dest": "/api/submit.py",
-            "headers": {
-                "Access-Control-Allow-Origin": "*"
-            }
-        },
-        {
-            "src": "/api/init-db",
-            "dest": "/api/init-db.py",
-            "headers": {
-                "Access-Control-Allow-Origin": "*"
-            }
+            "source": "/api/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Access-Control-Allow-Methods",
+                    "value": "GET, POST, OPTIONS"
+                },
+                {
+                    "key": "Access-Control-Allow-Headers",
+                    "value": "Content-Type"
+                }
+            ]
         }
     ]
 }

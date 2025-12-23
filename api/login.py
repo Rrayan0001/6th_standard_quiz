@@ -2,7 +2,6 @@ from http.server import BaseHTTPRequestHandler
 import json
 import os
 import uuid
-import psycopg
 
 def get_db_url():
     url = os.environ.get("DATABASE_URL")
@@ -34,6 +33,7 @@ class handler(BaseHTTPRequestHandler):
             return
         
         try:
+            import psycopg
             with psycopg.connect(db_url, autocommit=True) as conn:
                 with conn.cursor() as cur:
                     cur.execute(

@@ -50,10 +50,17 @@ class handler(BaseHTTPRequestHandler):
         
         final_questions = []
         for q in combined:
+            # Convert options from dict {"A": "val", ...} to array ["A) val", "B) val", ...]
+            opts = q.get('options', {})
+            if isinstance(opts, dict):
+                options_array = [f"{k}) {v}" for k, v in sorted(opts.items())]
+            else:
+                options_array = opts  # Already an array
+            
             final_questions.append({
                 "id": q['unique_id'],
                 "question": q['question'],
-                "options": q['options'],
+                "options": options_array,
                 "section": q.get('section', 'General')
             })
         

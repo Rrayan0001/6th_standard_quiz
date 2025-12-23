@@ -102,7 +102,14 @@ class handler(BaseHTTPRequestHandler):
                 if sec_key not in section_scores:
                     section_scores[sec_key] = 0
 
-                if q_obj.get('correct_answer', '').strip() == str(ans).strip():
+                # Extract letter from answer format "A) value" -> "A"
+                user_ans = str(ans).strip()
+                if ')' in user_ans:
+                    user_ans = user_ans.split(')')[0].strip()
+                
+                correct_ans = q_obj.get('correct_answer', '').strip()
+                
+                if correct_ans == user_ans:
                     score += 1
                     section_scores[sec_key] += 1
         

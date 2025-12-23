@@ -106,6 +106,8 @@ class handler(BaseHTTPRequestHandler):
                     score += 1
                     section_scores[sec_key] += 1
         
+        # Count how many questions were actually answered
+        answered_count = len(answers)
         student_name = "विद्यार्थी"
         db_url = get_db_url()
         db_error = None
@@ -186,6 +188,7 @@ class handler(BaseHTTPRequestHandler):
         response = {
             "score": score,
             "total": total_questions,
+            "answered": answered_count,
             "percentage": (score/total_questions)*100 if total_questions > 0 else 0,
             "report": report,
             "debug": {

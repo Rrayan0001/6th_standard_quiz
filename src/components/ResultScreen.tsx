@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 interface Result {
     score: number;
     total: number;
+    answered?: number;
     percentage: number;
     report: string;
 }
@@ -24,6 +25,8 @@ export const ResultScreen: React.FC<Props> = ({ result, studentName, onRestart, 
         setIsAnalyzing(false);
     };
 
+    const answeredCount = result.answered ?? result.total;
+
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className="neo-box p-8 max-w-4xl w-full bg-white text-center">
@@ -32,19 +35,23 @@ export const ResultScreen: React.FC<Props> = ({ result, studentName, onRestart, 
                     <p className="text-xl">छान प्रयत्न, <span className="text-blue-600 font-bold">{studentName}</span>!</p>
                 </div>
 
-                {/* Score Card */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="neo-box bg-yellow-100 p-6">
-                        <div className="text-5xl font-black mb-2">{result.score}</div>
-                        <div className="font-bold uppercase tracking-wide">तुमचे गुण</div>
+                {/* Score Card - 4 columns now */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div className="neo-box bg-yellow-100 p-4">
+                        <div className="text-4xl font-black mb-1">{result.score}</div>
+                        <div className="text-sm font-bold uppercase tracking-wide">तुमचे गुण</div>
                     </div>
-                    <div className="neo-box bg-pink-100 p-6">
-                        <div className="text-5xl font-black mb-2">{result.total}</div>
-                        <div className="font-bold uppercase tracking-wide">एकूण प्रश्न</div>
+                    <div className="neo-box bg-pink-100 p-4">
+                        <div className="text-4xl font-black mb-1">{result.total}</div>
+                        <div className="text-sm font-bold uppercase tracking-wide">एकूण प्रश्न</div>
                     </div>
-                    <div className="neo-box bg-green-100 p-6">
-                        <div className="text-5xl font-black mb-2">{Math.round(result.percentage)}%</div>
-                        <div className="font-bold uppercase tracking-wide">टक्केवारी</div>
+                    <div className="neo-box bg-purple-100 p-4">
+                        <div className="text-4xl font-black mb-1">{answeredCount}</div>
+                        <div className="text-sm font-bold uppercase tracking-wide">दिलेले उत्तर</div>
+                    </div>
+                    <div className="neo-box bg-green-100 p-4">
+                        <div className="text-4xl font-black mb-1">{Math.round(result.percentage)}%</div>
+                        <div className="text-sm font-bold uppercase tracking-wide">टक्केवारी</div>
                     </div>
                 </div>
 
